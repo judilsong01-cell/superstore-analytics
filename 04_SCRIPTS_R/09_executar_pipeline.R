@@ -1,0 +1,17 @@
+# Superstore Analytics — pipeline reproduzível (R base)
+raiz <- normalizePath(".")
+caminho <- function(...) file.path(raiz, ...)
+for (p in c("03_DADOS_LIMPOS", "06_GRAFICOS", "07_TABELAS")) dir.create(caminho(p), showWarnings = FALSE, recursive = TRUE)
+bruto <- read.csv(caminho("01_DADOS_BRUTOS", "Sample - Superstore.csv"), check.names = FALSE, stringsAsFactors = FALSE, fileEncoding = "Latin1")
+names(bruto) <- gsub("(^_|_$)", "", gsub("[^a-z0-9]+", "_", tolower(iconv(names(bruto), to = "ASCII//TRANSLIT"))))
+limpo <- bruto
+limpo[] <- lapply(limpo, function(x) if (is.character(x)) trimws(enc2utf8(x)) else x)
+limpo <- limpo[!duplicated(limpo), ]
+write.csv(data.frame(linhas_brutas=nrow(bruto), linhas_limpas=nrow(limpo), colunas=ncol(limpo), ausentes=sum(is.na(limpo)), duplicados_removidos=nrow(bruto)-nrow(limpo)), caminho("07_TABELAS", "validacao_limpeza.csv"), row.names=FALSE)
+write.csv(limpo, caminho("03_DADOS_LIMPOS", "superstore_limpo.csv"), row.names=FALSE, na="")
+por_categoria <- aggregate(cbind(sales, profit, quantity) ~ category, limpo, sum)
+por_regiao <- aggregate(cbind(sales, profit) ~ region, limpo, sum)
+write.csv(por_categoria, caminho("07_TABELAS", "desempenho_por_categoria.csv"), row.names=FALSE)
+write.csv(por_regiao, caminho("07_TABELAS", "desempenho_por_regiao.csv"), row.names=FALSE)
+png(caminho("06_GRAFICOS", "lucro_por_categoria.png"),1440,900,res=150); barplot(por_categoria$profit,names.arg=por_categoria$category,col="#2C7FB8",ylab="Lucro",main="Lucro por categoria"); dev.off()
+cat("Pipeline Superstore concluído.\n")
