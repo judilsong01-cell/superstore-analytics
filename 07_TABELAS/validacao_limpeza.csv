@@ -1,2 +1,2 @@
-"linhas_brutas","linhas_limpas","colunas","ausentes","duplicados_removidos"
-9994,9994,21,0,0
+"raw_rows","clean_rows","columns","exact_duplicate_rows","rows_removed","missing_cells_raw","missing_cells_clean"
+9994,9994,25,0,0,0,0
